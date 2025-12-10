@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import "./App.css";
+import { useState } from "react";
+// import "./App.css";
 import ChatArea from "./components/ChatArea";
 import InputArea from "./components/InputArea";
 import Sidebar from "./components/Sidebar";
@@ -12,6 +12,7 @@ function App() {
     JSON.parse(localStorage.getItem("history")) || []
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   const askQuestion = async (questionText = question) => {
     if (!questionText.trim()) return;
@@ -23,6 +24,12 @@ function App() {
       let history = JSON.parse(localStorage.getItem("history"));
       if (!history.includes(questionText)) {
         history = [questionText, ...history];
+        history = history.map((item) =>
+          item.charAt(0).toUpperCase() + item.slice(1).trim());
+        history = [...new Set(history)]; // Remove duplicates
+        if (history.length > 20) {
+          history.pop(); // Keep only latest 20
+        }
         localStorage.setItem("history", JSON.stringify(history));
         setRecentHistory(history);
       }
@@ -46,6 +53,7 @@ function App() {
     try {
       let response = await fetch(URL, {
         method: "POST",
+        headers: { "Content-Type": "application/json" }, 
         body: JSON.stringify(payload),
       });
       response = await response.json();
@@ -70,15 +78,15 @@ function App() {
   };
 
   // dark mode toggle handler
-  const [darkMode, setDarkMode] = useState('dark');
-  useEffect(() => {
-    console.log(darkMode);
-    if (darkMode === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
+  const [darkMode, setDarkMode] = useState(false);
+  // useEffect(() => {
+  //   console.log(darkMode);
+  //   if (darkMode === 'dark') {
+  //     document.documentElement.classList.add('dark');
+  //   } else {
+  //     document.documentElement.classList.remove('dark');
+  //   }
+  // }, [darkMode]);
 
 
 
@@ -93,20 +101,45 @@ function App() {
   };
 
   return (
-    <div className="{darkMode?'dark':'light'}">
-      <div className="grid grid-cols-5 text-left h-screen overflow-hidden">
-        <select onChange={(event)=>setDarkMode(event.target.value)} className="fixed text-white bottom-0 p-5">
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-        
-        <Sidebar
-          recentHistory={recentHistory}
-          clearHistory={clearHistory}
-          handleHistoryClick={handleHistoryClick}
-        />
+    <div className={darkMode ? "bg-black text-white min-h-screen" : "bg-white text-black min-h-screen"}>
+      <div className="grid grid-cols-1 md:grid-cols-5 text-left h-screen overflow-hidden">
+        <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="fixed text-white bottom-0 left-0 p-3 md:p-5 z-50"
+          >
+            {darkMode ? "Light Mode" : "Dark Mode"}
+          </button>
 
-        <div className="col-span-4 bg-gradient-to-br from-zinc-900 via-zinc-900 to-gray-900 h-screen flex flex-col">
+        {/* Mobile menu button */}
+        <button 
+          onClick={() => setShowSidebar(!showSidebar)}
+          className="md:hidden fixed top-4 left-4 z-50 bg-zinc-800 text-white p-2 rounded"
+        >
+          ☰
+        </button>
+
+
+        
+        
+        {/* Sidebar with mobile overlay */}
+        <div className={`${showSidebar ? 'block' : 'hidden'} md:block fixed md:relative z-40 w-64 md:w-auto h-full`}>
+          <Sidebar
+            recentHistory={recentHistory}
+            setRecentHistory={setRecentHistory}  // <- Make sure this is passed
+            clearHistory={clearHistory}
+            handleHistoryClick={handleHistoryClick}
+          />
+        </div>
+
+        {/* Overlay for mobile */}
+        {showSidebar && (
+          <div 
+            className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+            onClick={() => setShowSidebar(false)}
+          />
+        )}
+
+        <div className="col-span-1 md:col-span-4 bg-gradient-to-br from-zinc-900 via-zinc-900 to-gray-900 h-screen flex flex-col">
           <ChatArea result={result} isLoading={isLoading} />
           
           <InputArea

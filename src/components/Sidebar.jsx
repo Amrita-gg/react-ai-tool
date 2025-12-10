@@ -1,4 +1,19 @@
-const Sidebar = ({ recentHistory, clearHistory, handleHistoryClick }) => {
+const Sidebar = ({ recentHistory, clearHistory, handleHistoryClick,setRecentHistory }) => {
+
+  const clearSelectedHistory = (itemToRemove) => {
+    let history = JSON.parse(localStorage.getItem("history"));
+    console.log("Before removal:", history);
+    history = history.filter((item) => {
+      if(item!== itemToRemove){
+        return item;
+      }
+    })
+    setRecentHistory(history);
+    localStorage.setItem("history", JSON.stringify(history));
+    console.log("After removal:", history);
+  };
+
+
   return (
     <div className="col-span-1 bg-gradient-to-b from-zinc-900 to-zinc-950 border-r border-zinc-800 h-screen p-6 text-white shadow-2xl flex flex-col">
       <div className="mb-8">
@@ -42,14 +57,31 @@ const Sidebar = ({ recentHistory, clearHistory, handleHistoryClick }) => {
         <ul className="overflow-y-auto flex-1 space-y-1">
           {recentHistory && recentHistory.length ? (
             recentHistory.map((item, i) => (
+            <div className="flex justify-between">
               <li
                 key={i}
                 onClick={() => handleHistoryClick(item)}
-                className="cursor-pointer truncate hover:bg-zinc-800 p-1.5 rounded-lg hover:text-white text-sm text-gray-300 transition-all duration-200"
+                className="w-full cursor-pointer truncate hover:bg-zinc-800 p-1.5 rounded-lg hover:text-white text-sm text-gray-300 transition-all duration-200"
                 title={item}
               >
                 {item}
               </li>
+              <button
+                onClick={()=>clearSelectedHistory(item)}
+                className="p-1.5 rounded-lg hover:bg-zinc-800 transition-all duration-200 group"
+                title="Clear history"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="18px"
+                  viewBox="0 -960 960 960"
+                  width="18px"
+                  className="fill-gray-500 group-hover:fill-red-400 transition-colors duration-200"
+                >
+                  <path d="m400-325 80-80 80 80 51-51-80-80 80-80-51-51-80 80-80-80-51 51 80 80-80 80 51 51Zm-88 181q-29.7 0-50.85-21.15Q240-186.3 240-216v-480h-48v-72h192v-48h192v48h192v72h-48v479.57Q720-186 698.85-165T648-144H312Zm336-552H312v480h336v-480Zm-336 0v480-480Z" />
+                </svg>
+              </button>
+            </div>
             ))
           ) : (
             <li className="text-gray-500 italic text-sm px-3">

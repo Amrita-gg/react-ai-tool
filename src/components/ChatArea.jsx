@@ -17,7 +17,8 @@ const ChatArea = ({ result, isLoading }) => {
     <div className="flex-1 overflow-hidden p-8">
       <div
         ref={scrollToAns}
-        className="h-full bg-gradient-to-b from-gray-900/40 to-gray-950/40 rounded-3xl p-6 shadow-2xl border border-gray-800/50 backdrop-blur-sm overflow-y-auto"
+        className="h-full bg-gradient-to-b from-gray-900/40 to-gray-950/40 rounded-3xl p-6 
+        shadow-2xl border border-gray-800/50 backdrop-blur-sm overflow-y-auto"
       >
         <ul className="space-y-6">
           {result && result.length ? (
